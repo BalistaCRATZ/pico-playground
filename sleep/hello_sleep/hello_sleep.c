@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#define MAX_ITER 5
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/sleep.h"
@@ -18,25 +20,25 @@ static void sleep_callback(void) {
 }
 
 static void rtc_sleep(void) {
-    // Start on Friday 5th of June 2020 15:45:00
+    // Start on Wednesday 5th of July 2023 12:00:00
     datetime_t t = {
-            .year  = 2020,
-            .month = 06,
+            .year  = 2023,
+            .month = 07,
             .day   = 05,
-            .dotw  = 5, // 0 is Sunday, so 5 is Friday
-            .hour  = 15,
-            .min   = 45,
+            .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
+            .hour  = 12,
+            .min   = 00,
             .sec   = 00
     };
 
     // Alarm 10 seconds later
     datetime_t t_alarm = {
-            .year  = 2020,
-            .month = 06,
+            .year  = 2023,
+            .month = 07,
             .day   = 05,
-            .dotw  = 5, // 0 is Sunday, so 5 is Friday
-            .hour  = 15,
-            .min   = 45,
+            .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
+            .hour  = 12,
+            .min   = 00,
             .sec   = 10
     };
 
@@ -51,7 +53,9 @@ static void rtc_sleep(void) {
 }
 
 int main() {
+
     stdio_init_all();
+
     printf("Hello Sleep!\n");
 
     printf("Switching to XOSC\n");
@@ -72,6 +76,11 @@ int main() {
     while (!awake) {
         printf("Should be sleeping\n");
     }
+
+    //Restart the ROSC - this is crucial in preventing lock-up of the cores, so execution may continue
+    rosc_restart();
+
+    printf("ROSC restarted!");
 
     return 0;
 }
