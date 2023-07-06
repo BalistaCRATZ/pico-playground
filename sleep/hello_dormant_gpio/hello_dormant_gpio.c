@@ -1,22 +1,21 @@
 /**
- * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+ * Copyright (c) 2023 Raspberry Pi (Trading) Ltd.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
-#define MAX_ITER 5
 
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/sleep.h"
 
 #include "hardware/rtc.h"
+#include "hardware/clocks.h"
 
-static bool awake;
+#define EXTERNAL_CLOCK_INPUT_PIN 20
+#define RTC_FREQ_HZ 46875
 
 static void sleep_callback(void) {
     printf("RTC woke us up\n");
-    awake = true;
 }
 
 static void rtc_sleep(void) {
@@ -39,43 +38,41 @@ static void rtc_sleep(void) {
             .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
             .hour  = 12,
             .min   = 00,
-            .sec   = 5
+            .sec   = 10
     };
 
-    // Start the RTC
+    //Start the RTC
     rtc_init();
     rtc_set_datetime(&t);
 
     printf("Sleeping for 10 seconds\n");
     uart_default_tx_wait_blocking();
 
-    sleep_goto_sleep_until(&t_alarm, &sleep_callback);
+    //Go to sleep for 10 seconds, with RTC running off GP20
+    //The external clock is the RTC of another pico being fed to GP20
+    sleep_goto_dormant_until(&t_alarm, &sleep_callback, RTC_FREQ_HZ, EXTERNAL_CLOCK_INPUT_PIN);
+
 }
 
 int main() {
 
     stdio_init_all();
-
-    printf("Hello Sleep!\n");
-
+    printf("Hello Dormant GPIO!\n");
+            
     printf("Switching to XOSC\n");
-
-    // Wait for the fifo to be drained so we get reliable output
     uart_default_tx_wait_blocking();
 
     // UART will be reconfigured by sleep_run_from_xosc
     sleep_run_from_xosc();
 
-    printf("Switched to XOSC\n");
+    printf("Running from XOSC\n");
+    uart_default_tx_wait_blocking();
 
-    awake = false;
+    printf("XOSC going dormant\n");
+    uart_default_tx_wait_blocking();
 
+    // Go to sleep until the RTC interrupt is generated after 10 seconds
     rtc_sleep();
-
-    // Make sure we don't wake
-    while (!awake) {
-        printf("Should be sleeping\n");
-    }
 
     // //Restart the ROSC - this is crucial in preventing lock-up of the cores, so execution may continue
     sleep_rosc_restart();
