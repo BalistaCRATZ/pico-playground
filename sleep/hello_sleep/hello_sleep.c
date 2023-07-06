@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#define MAX_ITER 5
-
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/sleep.h"
