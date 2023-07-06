@@ -39,7 +39,7 @@ static void rtc_sleep(void) {
             .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
             .hour  = 12,
             .min   = 00,
-            .sec   = 5
+            .sec   = 10
     };
 
     // Start the RTC
@@ -79,6 +79,8 @@ int main() {
 
     // //Restart the ROSC - this is crucial in preventing lock-up of the cores, so execution may continue
     sleep_rosc_restart();
+
+    uart_default_tx_wait_blocking();
 
     printf("ROSC restarted!\n");
 
