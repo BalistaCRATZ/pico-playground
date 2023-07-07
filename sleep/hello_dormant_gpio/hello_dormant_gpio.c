@@ -75,7 +75,7 @@ int main() {
     rtc_sleep();
 
     // //Restart the ROSC - this is crucial in preventing lock-up of the cores, so execution may continue
-    sleep_rosc_restart();
+    rosc_restart();
 
     printf("ROSC restarted!\n");
 

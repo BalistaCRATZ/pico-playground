@@ -27,6 +27,8 @@ int main() {
     // Go to sleep until we see a high edge on GPIO 10
     sleep_goto_dormant_until_edge_high(10);
 
+    rosc_restart();
+
     uint i = 0;
     while (1) {
         printf("XOSC awake %d\n", i++);
